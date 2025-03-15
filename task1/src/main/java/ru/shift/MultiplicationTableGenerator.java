@@ -10,12 +10,7 @@ import java.util.NoSuchElementException;
 public class MultiplicationTableGenerator {
     private int tableSize;
 
-    public MultiplicationTableGenerator() {
-        getInput();
-        printTable();
-    }
-
-    private void getInput() {
+    public void getInput() {
         InputHandler inputHandler = new InputHandler();
         try {
             tableSize = inputHandler.getSizeFromUser(Config.MIN_SIZE, Config.MAX_SIZE);
@@ -25,7 +20,7 @@ public class MultiplicationTableGenerator {
         }
     }
 
-    private void printTable() {
+    public void printTable() {
         TablePrinter tablePrinter = new TablePrinter(
                 Config.COL_DELIMITER,
                 Config.ROW_DELIMITER,
