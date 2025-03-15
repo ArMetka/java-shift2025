@@ -29,7 +29,7 @@ public class MultiplicationTableGenerator {
         );
 
         try {
-            tablePrinter.printTable();
+            tablePrinter.printTable(System.out);
         } catch (IOException ex) {
             System.err.println("Failed to print table: " + ex.getMessage());
             System.exit(1);

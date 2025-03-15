@@ -1,17 +1,19 @@
 package ru.shift.io;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 
 public class TablePrinter {
+    private final int tableSize;
+
     private final char columnDelimiter;
     private final char rowDelimiter;
     private final char crossChar;
-    private final int tableSize;
+
     private final int firstColumnWidth;
     private final int defaultColumnWidth;
+    private final String rowDelimiterStr;
 
     public TablePrinter(char columnDelimiter,
                         char rowDelimiter,
@@ -21,36 +23,44 @@ public class TablePrinter {
         this.rowDelimiter = rowDelimiter;
         this.crossChar = crossChar;
         this.tableSize = tableSize;
+
         firstColumnWidth = getNumberWidth(tableSize);
         defaultColumnWidth = getNumberWidth(tableSize * tableSize);
+        rowDelimiterStr = getRowDelimiterStr();
     }
 
     public void printTable() throws IOException {
-        try (BufferedWriter out = new BufferedWriter(new PrintWriter(System.out))) {
-            for (int row = 0; row < tableSize + 1; row++) {
-                for (int col = 0; col < tableSize + 1; col++) {
-                    if (col == 0) {
-                        writeNumberSpaced(out, firstColumnWidth, row);
-                    } else if (row == 0) {
-                        writeNumberSpaced(out, defaultColumnWidth, col);
-                    } else {
-                        writeNumberSpaced(out, defaultColumnWidth, row * col);
-                    }
+        printTable(System.out);
+    }
 
-                    if (col != tableSize) {
-                        out.write(columnDelimiter);
-                    }
-                }
-                out.newLine();
-                writeRowDelimiter(out);
-                out.newLine();
+    public void printTable(OutputStream outputStream) throws IOException {
+        try (PrintWriter out = new PrintWriter(outputStream)) {
+
+            out.write(" ".repeat(firstColumnWidth));
+            printRow(out, 1);
+
+            for (int row = 1; row < tableSize + 1; row++) {
+                out.printf("%" + firstColumnWidth + "d", row);
+                printRow(out, row);
             }
+
             out.flush();
         }
     }
 
+    private void printRow(PrintWriter out, int row) {
+        for (int col = 1; col < tableSize + 1; col++) {
+            out.write(columnDelimiter);
+            out.printf("%" + defaultColumnWidth + "d", row * col);
+        }
+        out.println();
+        out.println(rowDelimiterStr);
+    }
+
     private int getNumberWidth(int number) {
-        if (number == 0) return 0;
+        if (number == 0) {
+            return 0;
+        }
 
         int width = 1;
 
@@ -62,26 +72,16 @@ public class TablePrinter {
         return width;
     }
 
-    private void writeNumberSpaced(Writer out, int totalWidth, int number) throws IOException {
-        for (int i = 0; i < totalWidth - getNumberWidth(number); i++) {
-            out.write(" ");
-        }
+    private String getRowDelimiterStr() {
+        StringBuilder sb = new StringBuilder();
 
-        if (number != 0) {
-            out.write(String.valueOf(number));
-        }
-    }
-
-    private void writeRowDelimiter(Writer out) throws IOException {
-        for (int i = 0; i < firstColumnWidth; i++) {
-            out.write(rowDelimiter);
-        }
+        sb.append(String.valueOf(rowDelimiter).repeat(firstColumnWidth));
 
         for (int i = 0; i < tableSize; i++) {
-            out.write(crossChar);
-            for (int j = 0; j < defaultColumnWidth; j++) {
-                out.write(rowDelimiter);
-            }
+            sb.append(crossChar);
+            sb.append(String.valueOf(rowDelimiter).repeat(defaultColumnWidth));
         }
+
+        return sb.toString();
     }
 }
