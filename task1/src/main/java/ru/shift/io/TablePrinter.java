@@ -11,8 +11,9 @@ public class TablePrinter {
     private final char rowDelimiter;
     private final char crossChar;
 
-    private final int firstColumnWidth;
-    private final int defaultColumnWidth;
+    private final String firstCell;
+    private final String firstColumnFormat;
+    private final String defaultColumnFormat;
     private final String rowDelimiterStr;
 
     public TablePrinter(char columnDelimiter,
@@ -24,9 +25,13 @@ public class TablePrinter {
         this.crossChar = crossChar;
         this.tableSize = tableSize;
 
-        firstColumnWidth = getNumberWidth(tableSize);
-        defaultColumnWidth = getNumberWidth(tableSize * tableSize);
-        rowDelimiterStr = getRowDelimiterStr();
+        int firstColumnWidth = getNumberWidth(tableSize);
+        int defaultColumnWidth = getNumberWidth(tableSize * tableSize);
+
+        firstCell = " ".repeat(firstColumnWidth);
+        firstColumnFormat = "%" + firstColumnWidth + "d";
+        defaultColumnFormat = "%" + defaultColumnWidth + "d";
+        rowDelimiterStr = getRowDelimiterStr(firstColumnWidth, defaultColumnWidth);
     }
 
     public void printTable() throws IOException {
@@ -36,11 +41,11 @@ public class TablePrinter {
     public void printTable(OutputStream outputStream) throws IOException {
         try (PrintWriter out = new PrintWriter(outputStream)) {
 
-            out.write(" ".repeat(firstColumnWidth));
+            out.write(firstCell);
             printRow(out, 1);
 
             for (int row = 1; row < tableSize + 1; row++) {
-                out.printf("%" + firstColumnWidth + "d", row);
+                out.printf(firstColumnFormat, row);
                 printRow(out, row);
             }
 
@@ -51,7 +56,7 @@ public class TablePrinter {
     private void printRow(PrintWriter out, int row) {
         for (int col = 1; col < tableSize + 1; col++) {
             out.write(columnDelimiter);
-            out.printf("%" + defaultColumnWidth + "d", row * col);
+            out.printf(defaultColumnFormat, row * col);
         }
         out.println();
         out.println(rowDelimiterStr);
@@ -72,8 +77,8 @@ public class TablePrinter {
         return width;
     }
 
-    private String getRowDelimiterStr() {
-        StringBuilder sb = new StringBuilder();
+    private String getRowDelimiterStr(int firstColumnWidth, int defaultColumnWidth) {
+        StringBuilder sb = new StringBuilder((defaultColumnWidth + 1) * (tableSize + 1));
 
         sb.append(String.valueOf(rowDelimiter).repeat(firstColumnWidth));
 
