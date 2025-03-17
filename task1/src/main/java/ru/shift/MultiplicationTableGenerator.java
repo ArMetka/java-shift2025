@@ -1,24 +1,30 @@
 package ru.shift;
 
 import ru.shift.config.Config;
+import ru.shift.exception.PrintTableException;
+import ru.shift.exception.ReadSizeException;
 import ru.shift.io.InputHandler;
 import ru.shift.io.TablePrinter;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.NoSuchElementException;
 
 public class MultiplicationTableGenerator {
-    public int getInput() {
+    public int getInput() throws ReadSizeException {
         InputHandler inputHandler = new InputHandler();
         try {
             return inputHandler.getSizeFromUser(Config.MIN_SIZE, Config.MAX_SIZE);
         } catch (NoSuchElementException | IllegalStateException ex) {
-            System.err.println("Failed to read size");
-            return 0;
+            throw new ReadSizeException("Failed to read size", ex);
         }
     }
 
-    public void printTable(int tableSize) {
+    public void printTable(int tableSize) throws PrintTableException {
+        printTable(tableSize, System.out);
+    }
+
+    public void printTable(int tableSize, OutputStream outputStream) throws PrintTableException {
         if (tableSize == 0) {
             return;
         }
@@ -31,10 +37,9 @@ public class MultiplicationTableGenerator {
         );
 
         try {
-            tablePrinter.printTable(System.out);
+            tablePrinter.printTable(outputStream);
         } catch (IOException ex) {
-            System.err.println("Failed to print table: " + ex.getMessage());
-            System.exit(1);
+            throw new PrintTableException("Failed to print table", ex);
         }
     }
 }
