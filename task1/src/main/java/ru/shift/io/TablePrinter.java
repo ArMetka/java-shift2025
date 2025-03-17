@@ -5,6 +5,10 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class TablePrinter {
+    private static final String SPACE_STR = " ";
+    private static final String PERCENT_STR = "%";
+    private static final String D_STR = "d";
+
     private final int tableSize;
 
     private final char columnDelimiter;
@@ -28,9 +32,9 @@ public class TablePrinter {
         int firstColumnWidth = getNumberWidth(tableSize);
         int defaultColumnWidth = getNumberWidth(tableSize * tableSize);
 
-        firstCell = " ".repeat(firstColumnWidth);
-        firstColumnFormat = "%" + firstColumnWidth + "d";
-        defaultColumnFormat = "%" + defaultColumnWidth + "d";
+        firstCell = SPACE_STR.repeat(firstColumnWidth);
+        firstColumnFormat = PERCENT_STR + firstColumnWidth + D_STR;
+        defaultColumnFormat = PERCENT_STR + defaultColumnWidth + D_STR;
         rowDelimiterStr = getRowDelimiterStr(firstColumnWidth, defaultColumnWidth);
     }
 
