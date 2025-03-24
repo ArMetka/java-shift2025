@@ -17,6 +17,23 @@ public class Rectangle extends Shape {
     private final double width;
     private double lenOfDiagonal;
 
+    public static Rectangle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
+        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
+
+        if (params.length != 2) {
+            throw new InvalidShapeParamsException("Expected 2 rectangle parameters, got " + params.length);
+        }
+
+        try {
+            return new Rectangle(
+                    Double.parseDouble(params[0]),
+                    Double.parseDouble(params[1])
+            );
+        } catch (NumberFormatException ex) {
+            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
+        }
+    }
+
     public Rectangle(double side1, double side2) throws InvalidShapeParamsException {
         validateSide(side1);
         validateSide(side2);
@@ -61,22 +78,5 @@ public class Rectangle extends Shape {
         area = length * width;
         perimeter = length * 2 + perimeter * 2;
         lenOfDiagonal = Math.sqrt(length * length + width * width);
-    }
-
-    public static Rectangle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
-        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
-
-        if (params.length != 2) {
-            throw new InvalidShapeParamsException("Expected 2 rectangle parameters, got " + params.length);
-        }
-
-        try {
-            return new Rectangle(
-                    Double.parseDouble(params[0]),
-                    Double.parseDouble(params[1])
-            );
-        } catch (NumberFormatException ex) {
-            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
-        }
     }
 }

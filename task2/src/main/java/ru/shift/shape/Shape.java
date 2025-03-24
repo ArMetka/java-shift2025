@@ -14,6 +14,8 @@ public abstract class Shape {
     protected double area;
     protected double perimeter;
 
+    public abstract void write(PrintWriter writer);
+
     protected void writeCommon(PrintWriter writer, String name) {
         writer.write(SHAPE_TYPE_OUT_STR);
         writer.write(name);
@@ -26,15 +28,5 @@ public abstract class Shape {
         writer.write(SHAPE_PERIMETER_OUT_STR);
         writer.printf(MM_UNITS_OUTPUT_FORMAT, perimeter);
         writer.write(System.lineSeparator());
-    }
-
-    public abstract void write(PrintWriter writer);
-
-    public double getArea() {
-        return area;
-    }
-
-    public double getPerimeter() {
-        return perimeter;
     }
 }

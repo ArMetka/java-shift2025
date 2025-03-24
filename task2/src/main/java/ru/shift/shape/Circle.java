@@ -15,6 +15,22 @@ public class Circle extends Shape {
     private final double radius;
     private double diameter;
 
+    public static Circle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
+        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
+
+        if (params.length != 1) {
+            throw new InvalidShapeParamsException("Expected 1 circle parameter, got " + params.length);
+        }
+
+        try {
+            return new Circle(
+                    Double.parseDouble(params[0])
+            );
+        } catch (NumberFormatException ex) {
+            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
+        }
+    }
+
     public Circle(double radius) throws InvalidShapeParamsException {
         validateRadius(radius);
 
@@ -48,29 +64,5 @@ public class Circle extends Shape {
         area = Math.PI * radius * radius;
         diameter = radius * 2;
         perimeter = Math.PI * diameter;
-    }
-
-    public static Circle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
-        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
-
-        if (params.length != 1) {
-            throw new InvalidShapeParamsException("Expected 1 circle parameter, got " + params.length);
-        }
-
-        try {
-            return new Circle(
-                    Double.parseDouble(params[0])
-            );
-        } catch (NumberFormatException ex) {
-            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
-        }
-    }
-
-    public double getRadius() {
-        return radius;
-    }
-
-    public double getDiameter() {
-        return diameter;
     }
 }

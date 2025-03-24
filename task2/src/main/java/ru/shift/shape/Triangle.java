@@ -23,6 +23,24 @@ public class Triangle extends Shape {
     private double angle2;
     private double angle3;
 
+    public static Triangle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
+        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
+
+        if (params.length != 3) {
+            throw new InvalidShapeParamsException("Expected 3 triangle parameters, got " + params.length);
+        }
+
+        try {
+            return new Triangle(
+                    Double.parseDouble(params[0]),
+                    Double.parseDouble(params[1]),
+                    Double.parseDouble(params[2])
+            );
+        } catch (NumberFormatException ex) {
+            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
+        }
+    }
+
     public Triangle(double side1, double side2, double side3) throws InvalidShapeParamsException {
         validateSide(side1);
         validateSide(side2);
@@ -83,23 +101,5 @@ public class Triangle extends Shape {
         angle1 = Math.acos((side2 * side2 + side3 * side3 - side1 * side1) / (2 * side2 * side3));
         angle2 = Math.acos((side1 * side1 + side3 * side3 - side2 * side2) / (2 * side1 * side3));
         angle3 = Math.acos((side1 * side1 + side2 * side2 - side3 * side3) / (2 * side1 * side2));
-    }
-
-    public static Triangle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
-        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
-
-        if (params.length != 3) {
-            throw new InvalidShapeParamsException("Expected 3 triangle parameters, got " + params.length);
-        }
-
-        try {
-            return new Triangle(
-                    Double.parseDouble(params[0]),
-                    Double.parseDouble(params[1]),
-                    Double.parseDouble(params[2])
-            );
-        } catch (NumberFormatException ex) {
-            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
-        }
     }
 }

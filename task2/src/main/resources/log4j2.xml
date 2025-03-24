@@ -2,10 +2,10 @@
 <Configuration>
     <Appenders>
         <Console name="CONSOLE" target="SYSTEM_OUT">
-            <PatternLayout pattern="%-5p: %m%n" />
+            <PatternLayout pattern="%-5p: %m%n"/>
         </Console>
         <File name="FILE" filename="task2.log">
-            <PatternLayout pattern="%d - %p - %t - %m%n" />
+            <PatternLayout pattern="%d - %p - %t - %m%n"/>
         </File>
     </Appenders>
 
