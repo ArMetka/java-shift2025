@@ -2,6 +2,7 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
+import ru.shift.io.CircleReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,8 +20,8 @@ class CircleTest {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("");
 
-        assertThrows(InvalidShapeParamsException.class,
-                () -> Circle.read(reader)
+        assertThrows(NumberFormatException.class,
+                () -> CircleReader.read(reader)
         );
     }
 
@@ -30,7 +31,7 @@ class CircleTest {
         when(reader.readLine()).thenReturn("23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Circle.read(reader)
+                () -> CircleReader.read(reader)
         );
     }
 
@@ -39,8 +40,8 @@ class CircleTest {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("br");
 
-        assertThrows(InvalidShapeParamsException.class,
-                () -> Circle.read(reader)
+        assertThrows(NumberFormatException.class,
+                () -> CircleReader.read(reader)
         );
     }
 
@@ -50,7 +51,7 @@ class CircleTest {
         when(reader.readLine()).thenReturn("-23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Circle.read(reader)
+                () -> CircleReader.read(reader)
         );
     }
 
@@ -61,7 +62,7 @@ class CircleTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Circle circle = Circle.read(reader);
+        Circle circle = CircleReader.read(reader);
         circle.write(printWriter);
 
         String result = stringWriter.toString();

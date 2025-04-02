@@ -1,64 +1,67 @@
-package ru.shift.shape;
+package ru.shift.io;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
 import ru.shift.exception.UnknownShapeException;
+import ru.shift.shape.Circle;
+import ru.shift.shape.Rectangle;
+import ru.shift.shape.Shape;
+import ru.shift.shape.Triangle;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ShapeFactoryTest {
+class ShapeReaderTest {
     @Test
-    public void readShape_empty_throwsException() throws IOException {
+    public void read_empty_throwsException() throws IOException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("");
 
         assertThrows(UnknownShapeException.class,
-                () -> ShapeFactory.readShape(reader)
+                () -> ShapeReader.read(reader)
         );
     }
 
     @Test
-    public void readShape_unknownShapeCode_throwsException() throws IOException {
+    public void read_unknownShapeCode_throwsException() throws IOException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("ELLIPSE");
 
         assertThrows(UnknownShapeException.class,
-                () -> ShapeFactory.readShape(reader)
+                () -> ShapeReader.read(reader)
         );
     }
 
     @Test
-    public void readShape_validCircleCode_returnCircleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
+    public void read_validCircleCode_returnCircleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("CIRCLE", "23");
 
-        Shape shape = ShapeFactory.readShape(reader);
+        Shape shape = ShapeReader.read(reader);
 
         assertInstanceOf(Circle.class, shape);
     }
 
     @Test
-    public void readShape_validRectangleCode_returnRectangleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
+    public void read_validRectangleCode_returnRectangleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("RECTANGLE", "23 23");
 
-        Shape shape = ShapeFactory.readShape(reader);
+        Shape shape = ShapeReader.read(reader);
 
         assertInstanceOf(Rectangle.class, shape);
     }
 
     @Test
-    public void readShape_validTriangleCode_returnTriangleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
+    public void read_validTriangleCode_returnTriangleInstance() throws IOException, InvalidShapeParamsException, UnknownShapeException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("TRIANGLE", "23 23 23");
 
-        Shape shape = ShapeFactory.readShape(reader);
+        Shape shape = ShapeReader.read(reader);
 
         assertInstanceOf(Triangle.class, shape);
     }

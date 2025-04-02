@@ -2,6 +2,7 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
+import ru.shift.io.TriangleReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -30,7 +31,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -40,7 +41,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -50,7 +51,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("23 23 23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -59,8 +60,8 @@ class TriangleTest {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("23 br 23");
 
-        assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+        assertThrows(NumberFormatException.class,
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -70,7 +71,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("-23 23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -80,7 +81,7 @@ class TriangleTest {
         when(reader.readLine()).thenReturn("1 1 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Triangle.read(reader)
+                () -> TriangleReader.read(reader)
         );
     }
 
@@ -91,7 +92,7 @@ class TriangleTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Triangle triangle = Triangle.read(reader);
+        Triangle triangle = TriangleReader.read(reader);
         triangle.write(printWriter);
 
         String result = stringWriter.toString();
@@ -113,7 +114,7 @@ class TriangleTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Triangle triangle = Triangle.read(reader);
+        Triangle triangle = TriangleReader.read(reader);
         triangle.write(printWriter);
 
         String result = stringWriter.toString();

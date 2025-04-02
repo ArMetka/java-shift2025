@@ -2,6 +2,7 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
+import ru.shift.io.RectangleReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ class RectangleTest {
         when(reader.readLine()).thenReturn("");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Rectangle.read(reader)
+                () -> RectangleReader.read(reader)
         );
     }
 
@@ -30,7 +31,7 @@ class RectangleTest {
         when(reader.readLine()).thenReturn("23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Rectangle.read(reader)
+                () -> RectangleReader.read(reader)
         );
     }
 
@@ -40,7 +41,7 @@ class RectangleTest {
         when(reader.readLine()).thenReturn("23 23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Rectangle.read(reader)
+                () -> RectangleReader.read(reader)
         );
     }
 
@@ -49,8 +50,8 @@ class RectangleTest {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("br 23");
 
-        assertThrows(InvalidShapeParamsException.class,
-                () -> Rectangle.read(reader)
+        assertThrows(NumberFormatException.class,
+                () -> RectangleReader.read(reader)
         );
     }
 
@@ -60,7 +61,7 @@ class RectangleTest {
         when(reader.readLine()).thenReturn("-23 23");
 
         assertThrows(InvalidShapeParamsException.class,
-                () -> Rectangle.read(reader)
+                () -> RectangleReader.read(reader)
         );
     }
 
@@ -71,13 +72,13 @@ class RectangleTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Rectangle rectangle = Rectangle.read(reader);
+        Rectangle rectangle = RectangleReader.read(reader);
         rectangle.write(printWriter);
 
         String result = stringWriter.toString();
         assertTrue(result.contains("Shape type: Rectangle"));
         assertTrue(result.contains("Area: 1196.00 mm^2"));
-        assertTrue(result.contains("Perimeter: 104.00 mm"));
+        assertTrue(result.contains("Perimeter: 150.00 mm"));
         assertTrue(result.contains("Length of diagonal: 56.86 mm"));
         assertTrue(result.contains("Length: 52.00 mm"));
         assertTrue(result.contains("Width: 23.00 mm"));

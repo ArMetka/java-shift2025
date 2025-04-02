@@ -1,6 +1,6 @@
 package ru.shift.exception;
 
-public class UnknownShapeException extends Exception {
+public class UnknownShapeException extends RuntimeException {
     public UnknownShapeException(String message) {
         super(message);
     }

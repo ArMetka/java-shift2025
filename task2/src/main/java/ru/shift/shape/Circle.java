@@ -2,8 +2,6 @@ package ru.shift.shape;
 
 import ru.shift.exception.InvalidShapeParamsException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 public class Circle extends Shape {
@@ -13,33 +11,19 @@ public class Circle extends Shape {
     private static final String CIRCLE_DIAMETER_OUT_STR = "Diameter: ";
 
     private final double radius;
-    private double diameter;
+    private final double diameter;
 
-    public static Circle read(BufferedReader reader) throws IOException, InvalidShapeParamsException {
-        String[] params = reader.readLine().split(PARAMETER_DELIMITER);
-
-        if (params.length != 1) {
-            throw new InvalidShapeParamsException("Expected 1 circle parameter, got " + params.length);
-        }
-
-        try {
-            return new Circle(
-                    Double.parseDouble(params[0])
-            );
-        } catch (NumberFormatException ex) {
-            throw new InvalidShapeParamsException("Failed to parse double: " + ex.getMessage());
-        }
-    }
-
-    public Circle(double radius) throws InvalidShapeParamsException {
+    public Circle(double radius) {
         validateRadius(radius);
 
         this.radius = radius;
 
-        calculate();
+        diameter = radius * 2;
+        setArea(Math.PI * radius * radius);
+        setPerimeter(Math.PI * diameter);
     }
 
-    private void validateRadius(double radius) throws InvalidShapeParamsException {
+    private void validateRadius(double radius) {
         if (radius <= 0) {
             throw new InvalidShapeParamsException("Circle radius must be > 0");
         }
@@ -58,11 +42,5 @@ public class Circle extends Shape {
         writer.write(System.lineSeparator());
 
         writer.flush();
-    }
-
-    private void calculate() {
-        area = Math.PI * radius * radius;
-        diameter = radius * 2;
-        perimeter = Math.PI * diameter;
     }
 }
