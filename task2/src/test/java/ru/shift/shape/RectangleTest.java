@@ -2,78 +2,27 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
-import ru.shift.io.RectangleReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class RectangleTest {
     @Test
-    public void read_empty_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("");
-
+    public void constructor_valueOutOfRange_throwsException() {
         assertThrows(InvalidShapeParamsException.class,
-                () -> RectangleReader.read(reader)
+                () -> new Rectangle(-23, 23)
         );
     }
 
     @Test
-    public void read_oneValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> RectangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_moreThanTwoValues_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 23 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> RectangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_incorrectValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("br 23");
-
-        assertThrows(NumberFormatException.class,
-                () -> RectangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_valueOutOfRange_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("-23 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> RectangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_validRectangle_writeCorrectly() throws IOException, InvalidShapeParamsException, NoSuchFieldException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 52");
+    public void write_validRectangle_writeCorrectly() {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Rectangle rectangle = RectangleReader.read(reader);
-        rectangle.write(printWriter);
+        new Rectangle(23, 52).write(printWriter);
 
         String result = stringWriter.toString();
         assertTrue(result.contains("Shape type: Rectangle"));

@@ -2,98 +2,34 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
-import ru.shift.io.TriangleReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class TriangleTest {
     @Test
-    public void read_empty_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("");
-
+    public void constructor_valueOutOfRange_throwsException() {
         assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
+                () -> new Triangle(-23, 23, 23)
         );
     }
 
     @Test
-    public void read_inputOneValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23");
-
+    public void constructor_invalidTriangle_throwsException() {
         assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
+                () -> new Triangle(1, 1, 23)
         );
     }
 
     @Test
-    public void read_inputTwoValues_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_moreThanThreeValues_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 23 23 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_incorrectValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 br 23");
-
-        assertThrows(NumberFormatException.class,
-                () -> TriangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_valueOutOfRange_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("-23 23 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_invalidTriangle_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("1 1 23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> TriangleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_validEquilateralTriangle_writeCorrectly() throws IOException, InvalidShapeParamsException, NoSuchFieldException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 23 23");
+    public void write_validEquilateralTriangle_writeCorrectly() {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Triangle triangle = TriangleReader.read(reader);
-        triangle.write(printWriter);
+        new Triangle(23, 23, 23).write(printWriter);
 
         String result = stringWriter.toString();
         assertTrue(result.contains("Shape type: Triangle"));
@@ -108,14 +44,11 @@ class TriangleTest {
     }
 
     @Test
-    public void read_validArbitraryTriangle_writeCorrectly() throws IOException, InvalidShapeParamsException, NoSuchFieldException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("42 88 56");
+    public void write_validArbitraryTriangle_writeCorrectly() {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Triangle triangle = TriangleReader.read(reader);
-        triangle.write(printWriter);
+        new Triangle(42, 88, 56).write(printWriter);
 
         String result = stringWriter.toString();
         assertTrue(result.contains("Shape type: Triangle"));

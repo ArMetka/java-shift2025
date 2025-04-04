@@ -7,8 +7,8 @@ import ru.shift.exception.UnknownShapeException;
 import ru.shift.io.ConsoleOutputStrategy;
 import ru.shift.io.FileOutputStrategy;
 import ru.shift.io.OutputStrategy;
-import ru.shift.io.ShapeReader;
 import ru.shift.shape.Shape;
+import ru.shift.shape.ShapeReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,9 +47,11 @@ public class ShapesCalculator {
                 } catch (IOException ex) {
                     log.error(ex.getMessage());
                 } catch (NumberFormatException ex) {
-                    log.error("Failed to parse input {} in file {}", ex.getMessage(), file);
+                    log.error("Failed to parse input: {} in file {}", ex.getMessage(), file);
                 } catch (UnknownShapeException | InvalidShapeParamsException ex) {
                     log.error("{} in file {}", ex.getMessage(), file);
+                } catch (RuntimeException ex) {
+                    log.error("Failed to parse file {}", file);
                 }
             }
         } catch (IOException ex) {

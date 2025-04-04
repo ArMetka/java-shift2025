@@ -2,68 +2,27 @@ package ru.shift.shape;
 
 import org.junit.jupiter.api.Test;
 import ru.shift.exception.InvalidShapeParamsException;
-import ru.shift.io.CircleReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class CircleTest {
     @Test
-    public void read_empty_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("");
-
-        assertThrows(NumberFormatException.class,
-                () -> CircleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_moreThanOneValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23 23");
-
+    public void constructor_valueOutOfRange_throwsException() {
         assertThrows(InvalidShapeParamsException.class,
-                () -> CircleReader.read(reader)
+                () -> new Circle(-23)
         );
     }
 
     @Test
-    public void read_incorrectValue_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("br");
-
-        assertThrows(NumberFormatException.class,
-                () -> CircleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_valueOutOfRange_throwsException() throws IOException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("-23");
-
-        assertThrows(InvalidShapeParamsException.class,
-                () -> CircleReader.read(reader)
-        );
-    }
-
-    @Test
-    public void read_validCircle_writeCorrectly() throws IOException, InvalidShapeParamsException, NoSuchFieldException {
-        BufferedReader reader = mock(BufferedReader.class);
-        when(reader.readLine()).thenReturn("23");
+    public void write_validCircle_writeCorrectly() {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        Circle circle = CircleReader.read(reader);
-        circle.write(printWriter);
+        new Circle(23).write(printWriter);
 
         String result = stringWriter.toString();
         assertTrue(result.contains("Shape type: Circle"));
