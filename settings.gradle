@@ -1,2 +1,4 @@
 rootProject.name = '2025_01_mironov'
 include 'task1'
+include 'task2'
+
