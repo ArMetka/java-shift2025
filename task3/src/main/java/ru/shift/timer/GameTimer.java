@@ -1,5 +1,7 @@
 package ru.shift.timer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.shift.timer.event.TimerEvent;
 import ru.shift.timer.listener.TimerListener;
 
@@ -9,6 +11,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GameTimer implements IGameTimer {
+    private static final Logger log = LogManager.getLogger(GameTimer.class);
+
     private final List<TimerListener> listeners = new ArrayList<>();
     private Timer timer;
     private long timeStart;
@@ -22,7 +26,8 @@ public class GameTimer implements IGameTimer {
     @Override
     public void startTimer() {
         if (timer != null) {
-            throw new IllegalStateException();
+            log.warn("attempt to start already running timer");
+            return;
         }
 
         timer = new Timer();
@@ -40,6 +45,7 @@ public class GameTimer implements IGameTimer {
     @Override
     public void stopTimer() {
         if (timer == null) {
+            log.warn("attempt to stop already stopped timer");
             return;
         }
 
