@@ -2,12 +2,10 @@ package ru.shift.view;
 
 import ru.shift.common.dto.HighScore;
 import ru.shift.common.enums.GameType;
-import ru.shift.model.IMinesweeperModel;
-import ru.shift.model.enums.ModelEventType;
-import ru.shift.model.listener.CellUpdateEventListener;
-import ru.shift.model.listener.GameEndEventListener;
-import ru.shift.model.listener.GameFieldCreateEventListener;
-import ru.shift.model.listener.MarkCountEventListener;
+import ru.shift.model.event.CellUpdateEvent;
+import ru.shift.model.event.GameEndEvent;
+import ru.shift.model.event.GameFieldCreateEvent;
+import ru.shift.model.event.MarkCountEvent;
 import ru.shift.view.enums.ViewEventType;
 import ru.shift.view.event.CellEvent;
 import ru.shift.view.event.GameTypeEvent;
@@ -22,7 +20,6 @@ import java.util.List;
 
 public class MinesweeperView implements IMinesweeperView {
     private final EnumMap<ViewEventType, List<ViewEventListener<?>>> listeners;
-    private final IMinesweeperModel model;
 
     private final MainWindow mainWindow;
     private final SettingsWindow settingsWindow;
@@ -31,8 +28,7 @@ public class MinesweeperView implements IMinesweeperView {
     private final WinWindow winWindow;
     private final LoseWindow loseWindow;
 
-    public MinesweeperView(IMinesweeperModel model) {
-        this.model = model;
+    public MinesweeperView() {
         listeners = new EnumMap<>(ViewEventType.class);
         for (var type : ViewEventType.values()) {
             listeners.put(type, new ArrayList<>());
@@ -60,8 +56,6 @@ public class MinesweeperView implements IMinesweeperView {
 
         mainWindow.createGameField(GameType.NOVICE.getWidth(), GameType.NOVICE.getHeight());
         mainWindow.setBombsCount(GameType.NOVICE.getMinesCount());
-
-        subscribeToModel();
     }
 
     @Override
@@ -84,49 +78,37 @@ public class MinesweeperView implements IMinesweeperView {
     }
 
     @Override
-    public void setVisible(boolean visible) {
-        mainWindow.setVisible(visible);
+    public void handleCellUpdateEvent(CellUpdateEvent e) {
+        var pos = e.getPos();
+        mainWindow.setCellImage(pos.row(), pos.col(), e.getNewState().toGameImage());
     }
 
-    private void subscribeToModel() {
-        model.addGameEventListener(
-                ModelEventType.CELL_UPDATE,
-                (CellUpdateEventListener) e -> {
-                    var pos = e.getPos();
+    @Override
+    public void handleCreateFieldEvent(GameFieldCreateEvent e) {
+        var type = e.getGameType();
+        mainWindow.createGameField(type.getWidth(), type.getHeight());
+        mainWindow.setBombsCount(type.getMinesCount());
+    }
 
-                    mainWindow.setCellImage(pos.row(), pos.col(), e.getNewState().toGameImage());
-                }
-        );
+    @Override
+    public void handleMarkCountEvent(MarkCountEvent e) {
+        mainWindow.setBombsCount(e.getNewCount());
+    }
 
-        model.addGameEventListener(
-                ModelEventType.FIELD_CREATE,
-                (GameFieldCreateEventListener) e -> {
-                    var type = e.getGameType();
+    @Override
+    public void handleGameEndEvent(GameEndEvent e) {
+        switch (e.getGameEndType()) {
+            case VICTORY -> {
+                recordsWindow.setVisible(true);
+                winWindow.setVisible(true);
+            }
+            case DEFEAT -> loseWindow.setVisible(true);
+        }
+    }
 
-                    mainWindow.createGameField(type.getWidth(), type.getHeight());
-                    mainWindow.setBombsCount(type.getMinesCount());
-                }
-        );
-
-        model.addGameEventListener(
-                ModelEventType.MARK_COUNT,
-                (MarkCountEventListener) e -> {
-                    mainWindow.setBombsCount(e.getNewCount());
-                }
-        );
-
-        model.addGameEventListener(
-                ModelEventType.GAME_END,
-                (GameEndEventListener) e -> {
-                    switch (e.getGameEndType()) {
-                        case VICTORY -> {
-                            recordsWindow.setVisible(true);
-                            winWindow.setVisible(true);
-                        }
-                        case DEFEAT -> loseWindow.setVisible(true);
-                    }
-                }
-        );
+    @Override
+    public void setVisible(boolean visible) {
+        mainWindow.setVisible(visible);
     }
 
     private void notifyCellListeners(CellEvent e) {

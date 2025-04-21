@@ -5,8 +5,7 @@ import ru.shift.highscore.HighScoreManager;
 import ru.shift.model.IMinesweeperModel;
 import ru.shift.model.MinesweeperModel;
 import ru.shift.model.enums.ModelEventType;
-import ru.shift.model.listener.GameEndEventListener;
-import ru.shift.model.listener.GameStartEventListener;
+import ru.shift.model.listener.*;
 import ru.shift.timer.GameTimer;
 import ru.shift.timer.IGameTimer;
 import ru.shift.view.IMinesweeperView;
@@ -34,7 +33,23 @@ public class Minesweeper {
                 (GameEndEventListener) e -> timer.stopTimer()
         );
 
-        IMinesweeperView view = new MinesweeperView(model);
+        IMinesweeperView view = new MinesweeperView();
+        model.addGameEventListener(
+                ModelEventType.CELL_UPDATE,
+                (CellUpdateEventListener) view::handleCellUpdateEvent
+        );
+        model.addGameEventListener(
+                ModelEventType.FIELD_CREATE,
+                (GameFieldCreateEventListener) view::handleCreateFieldEvent
+        );
+        model.addGameEventListener(
+                ModelEventType.MARK_COUNT,
+                (MarkCountEventListener) view::handleMarkCountEvent
+        );
+        model.addGameEventListener(
+                ModelEventType.GAME_END,
+                (GameEndEventListener) view::handleGameEndEvent
+        );
         view.addViewEventListener(
                 ViewEventType.RECORD_NAME,
                 (RecordNameListener) e -> highScoreManager.checkForNewHighScore(e.getName())
