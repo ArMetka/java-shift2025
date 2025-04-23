@@ -90,7 +90,9 @@ public class Config {
 
         var cmd = parser.parse(options, args);
         propertiesPath = cmd.getOptionValue(PROPERTIES_LOCATION_OPT);
-        validatePropertiesPath();
+        if (propertiesPath != null) {
+            validatePropertiesPath();
+        }
     }
 
     private void validatePropertiesPath() {
