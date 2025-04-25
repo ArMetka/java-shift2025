@@ -14,20 +14,16 @@ public class Config {
     private int maxThreads;
     private long singleThreadThreshold;
 
-    public Config() {
-        setupOptions();
-        setDefaults();
+    public static Config fromArgs(String[] args) throws ParseException {
+        Config cfg = new Config();
+
+        cfg.setupOptions();
+        cfg.readOptions(args);
+
+        return cfg;
     }
 
-    public void setDefaults() {
-        maxThreads = Runtime.getRuntime().availableProcessors();
-        singleThreadThreshold = 1_000_000;
-    }
-
-    public void loadFromArgs(String[] args) throws ParseException {
-        CommandLineParser parser = new DefaultParser(false);
-        CommandLine cmd = parser.parse(options, args);
-        readOptions(cmd);
+    private Config() {
     }
 
     private void setupOptions() {
@@ -46,23 +42,30 @@ public class Config {
         );
     }
 
-    private void readOptions(CommandLine cmd) {
-        try {
-            var input = Integer.parseInt(cmd.getOptionValue(THREAD_NUM_OPT));
+    private void readOptions(String[] args) throws ParseException {
+        CommandLineParser parser = new DefaultParser(false);
+        CommandLine cmd = parser.parse(options, args);
+
+        var maxThreadsInput = cmd.getOptionValue(THREAD_NUM_OPT);
+        if (maxThreadsInput != null) {
+            var input = Integer.parseInt(maxThreadsInput);
             if (input < 1) {
                 throw new InvalidOptionException("thread num must be > 0");
             }
             maxThreads = input;
-        } catch (NullPointerException | NumberFormatException ignore) {
+        } else {
+            maxThreads = Runtime.getRuntime().availableProcessors();
         }
 
-        try {
-            var input = Long.parseLong(cmd.getOptionValue(SINGLE_THREAD_THRESHOLD_OPT));
+        var singleThreadThresholdInput = cmd.getOptionValue(SINGLE_THREAD_THRESHOLD_OPT);
+        if (singleThreadThresholdInput != null) {
+            var input = Long.parseLong(singleThreadThresholdInput);
             if (input < 2) {
                 throw new InvalidOptionException("threshold must be > 1");
             }
             singleThreadThreshold = input;
-        } catch (NullPointerException | NumberFormatException ignore) {
+        } else {
+            singleThreadThreshold = 1_000_000;
         }
     }
 
