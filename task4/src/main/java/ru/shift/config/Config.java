@@ -65,7 +65,7 @@ public class Config {
             }
             singleThreadThreshold = input;
         } else {
-            singleThreadThreshold = 1_000_000;
+            singleThreadThreshold = 10_000_000;
         }
     }
 

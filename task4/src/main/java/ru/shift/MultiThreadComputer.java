@@ -13,12 +13,9 @@ import java.util.concurrent.Executors;
 public class MultiThreadComputer {
     private static final Logger log = LogManager.getLogger(MultiThreadComputer.class);
 
-    private final ExecutorService pool;
     private final TaskInfo taskInfo;
     private final int threadNum;
     private final boolean calculateInParallel;
-
-    private boolean isShutdown;
 
     public MultiThreadComputer(TaskInfo taskInfo, int threadNum, long singleThreadThreshold) {
         validateTask(taskInfo);
@@ -27,27 +24,21 @@ public class MultiThreadComputer {
 
         this.taskInfo = taskInfo;
         this.threadNum = threadNum;
-        calculateInParallel = taskInfo.high() - taskInfo.low() > singleThreadThreshold;
-
-        if (calculateInParallel) {
-            pool = Executors.newFixedThreadPool(threadNum);
-            log.info("created pool with {} workers", threadNum);
-        } else {
-            pool = null;
-        }
+        calculateInParallel = shouldCalculateInParallel(singleThreadThreshold);
     }
 
     public double calculate() {
-        if (isShutdown) {
-            throw new IllegalStateException("already calculated");
-        }
-        isShutdown = true;
-
         double result;
         var timeStart = System.currentTimeMillis();
+
         if (calculateInParallel) {
-            log.info("calculating with {} threads", threadNum);
-            result = calculateMultiThreaded();
+            var pool = Executors.newFixedThreadPool(threadNum);
+            try {
+                log.info("calculating with {} threads", threadNum);
+                result = calculateMultiThreaded(pool);
+            } finally {
+                pool.shutdown();
+            }
         } else {
             log.info("calculating in current thread");
             result = calculateSingleThreaded();
@@ -69,18 +60,22 @@ public class MultiThreadComputer {
         return task.awaitResult();
     }
 
-    private double calculateMultiThreaded() {
+    private double calculateMultiThreaded(ExecutorService pool) {
         double result = 0;
 
         List<Task> tasks = new ArrayList<>(threadNum);
-        double rangePerTask = ((taskInfo.high() + 1) - taskInfo.low()) / (double) threadNum;
+        long rangePerTask = ((taskInfo.high() + 1) - taskInfo.low()) / threadNum;
 
         for (var i = 0; i < threadNum; i++) {
+            long low = taskInfo.low() + rangePerTask * i;
+            long high = (i == threadNum - 1) ? (taskInfo.high() + 1) : (low + rangePerTask);
+
             var task = new Task(new TaskInfo(
                     taskInfo.function(),
-                    (long) (taskInfo.low() + rangePerTask * i),
-                    (long) (taskInfo.low() + rangePerTask * (i + 1))
+                    low,
+                    high
             ));
+
             tasks.add(task);
             pool.execute(task);
         }
@@ -88,7 +83,6 @@ public class MultiThreadComputer {
         for (var task : tasks) {
             result += task.awaitResult();
         }
-        pool.shutdown();
 
         return result;
     }
@@ -114,5 +108,20 @@ public class MultiThreadComputer {
         if (singleThreadThreshold < 2) {
             throw new InvalidTaskException("invalid single thread threshold: " + singleThreadThreshold);
         }
+    }
+
+    private boolean shouldCalculateInParallel(long singleThreadThreshold) {
+        long range = taskInfo.high() + 1 - taskInfo.low();
+
+        if (range < singleThreadThreshold) {
+            return false;
+        }
+
+        if (range < threadNum) {
+            log.warn("unable to split work, calculating in single thread");
+            return false;
+        }
+
+        return true;
     }
 }

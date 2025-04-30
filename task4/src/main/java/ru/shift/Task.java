@@ -10,8 +10,8 @@ public class Task implements Runnable {
     private final TaskInfo taskInfo;
     private final Object lock = new Object();
 
-    private volatile boolean isCalculated;
-    private volatile double result;
+    private boolean isCalculated;
+    private double result;
 
     public Task(TaskInfo taskInfo) {
         this.taskInfo = taskInfo;
