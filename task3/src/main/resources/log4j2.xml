@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d] %-5p [%M()]: %m%n"/>
+        </Console>
+        <File name="FILE" filename="task3.log">
+            <PatternLayout pattern="%d - %p - %t - %M - %m%n"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="CONSOLE" level="INFO"/>
+            <AppenderRef ref="FILE" level="DEBUG"/>
+        </Root>
+    </Loggers>
+</Configuration>
