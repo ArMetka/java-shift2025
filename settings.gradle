@@ -5,3 +5,7 @@ include 'task3'
 
 
 include 'task4'
+include 'task6'
+include 'task6:server'
+include 'task6:client'
+include 'task6:common'

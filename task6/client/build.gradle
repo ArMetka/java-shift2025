@@ -1,0 +1,18 @@
+group = 'ru.shift.client'
+version = '1.0-SNAPSHOT'
+
+dependencies {
+    implementation project(':task6:common')
+}
+
+jar {
+    archiveFileName = 'client.jar'
+    manifest {
+        attributes('Main-Class': 'ru.shift.client.Main')
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
