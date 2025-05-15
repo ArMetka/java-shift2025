@@ -10,6 +10,5 @@ public enum MessageType implements Serializable {
     AUTH_REQUEST, // Authentification request       (client message)
     AUTH_SUCCESS, // Successful authentification    (server message)
     AUTH_FAIL,    // Authentification failed        (server message)
-    //    RECONNECT,    // Reconnect                      (client message)
     DISCONNECT,   // Disconnect                     (server & client message)
 }
