@@ -1,6 +1,6 @@
 package ru.shift.server.controller;
 
-import ru.shift.common.MessageType;
+import ru.shift.common.message.MessageType;
 
 import java.util.EnumMap;
 import java.util.ServiceLoader;

@@ -1,8 +1,10 @@
 package ru.shift.client.model.event;
 
-import ru.shift.common.dto.ChatMessageData;
+import java.util.Date;
 
 public record NewMessageEvent(
-        ChatMessageData chatMessageData
+        String username,
+        String message,
+        Date date
 ) {
 }

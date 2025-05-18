@@ -63,24 +63,25 @@ public class ChatView implements IChatView {
     private void subscribeToModel() {
         model.addModelEventListener(ModelEventType.CONNECTION_SUCCESS, (ConnectionSuccessEventListener) e -> {
             connectWindow.setVisible(false);
+//            mainWindow.setConnectEnabled(false);
             SwingUtilities.invokeLater(() -> mainWindow.setConnectEnabled(false));
             mainWindow.setSendMessageBtnEnabled(true);
         });
         model.addModelEventListener(ModelEventType.CONNECTION_FAIL, (ConnectionFailEventListener) e -> {
-            JOptionPane.showMessageDialog(connectWindow, e.description());
-            mainWindow.setConnectEnabled(true);
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(connectWindow, e.description()));
+            SwingUtilities.invokeLater(() -> mainWindow.setConnectEnabled(true));
         });
         model.addModelEventListener(ModelEventType.NEW_MESSAGE, (NewMessageEventListener) e -> {
-            mainWindow.newMessage(e.chatMessageData());
+            mainWindow.newMessage(e.username(), e.message(), e.date());
         });
         model.addModelEventListener(ModelEventType.USER_LIST, (UserListEventListener) e -> {
-            mainWindow.setUsers(e.userDataList());
+            mainWindow.setUsers(e.userList());
         });
         model.addModelEventListener(ModelEventType.USER_JOIN, (UserJoinEventListener) e -> {
-            mainWindow.userJoin(e.userData().name(), e.date());
+            mainWindow.userJoin(e.username(), e.date());
         });
         model.addModelEventListener(ModelEventType.USER_LEAVE, (UserLeaveEventListener) e -> {
-            mainWindow.userLeave(e.userData().name(), e.date());
+            mainWindow.userLeave(e.username(), e.date());
         });
     }
 

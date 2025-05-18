@@ -1,15 +1,14 @@
 package ru.shift.server.context;
 
-import ru.shift.common.dto.UserData;
 import ru.shift.server.exception.InvalidUserException;
 import ru.shift.server.exception.UsernameAlreadyTakenException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
-public class SessionManager {
+public abstract class UserManager {
     private static final Set<String> users;
     private static final Set<String> forbiddenUserNames;
 
@@ -20,7 +19,7 @@ public class SessionManager {
         );
     }
 
-    public static String addUser(String username) {
+    public static void addUser(String username) {
         if (username == null || username.isEmpty()) {
             throw new InvalidUserException("username is empty");
         }
@@ -33,8 +32,6 @@ public class SessionManager {
             if (!users.add(username.toLowerCase())) {
                 throw new UsernameAlreadyTakenException("username already taken by another user: " + username);
             }
-
-            return UUID.randomUUID().toString();
         }
     }
 
@@ -48,11 +45,9 @@ public class SessionManager {
         }
     }
 
-    public static List<UserData> getUsers() {
+    public static List<String> getUsers() {
         synchronized (users) {
-            return users.stream()
-                    .map(UserData::new)
-                    .toList();
+            return new ArrayList<>(users);
         }
     }
 }

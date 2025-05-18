@@ -2,36 +2,30 @@ package ru.shift.server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.shift.common.ClientMessage;
-import ru.shift.common.MessageType;
-import ru.shift.common.dto.ErrorData;
-import ru.shift.common.dto.UserData;
-import ru.shift.common.messages.AuthFail;
-import ru.shift.common.messages.UserLeave;
-import ru.shift.server.context.SessionManager;
+import ru.shift.common.connection.ChatConnection;
+import ru.shift.common.message.impl.JsonMessageMapper;
 import ru.shift.server.context.UserContext;
 import ru.shift.server.controller.ControllerRegistry;
 import ru.shift.server.dto.ServerConfig;
 import ru.shift.server.exception.InvalidServerConfigException;
-import ru.shift.server.service.IMessageService;
+import ru.shift.server.service.BroadcastService;
 
-import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Objects;
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatServer implements Runnable {
     private static final Logger log = LogManager.getLogger(ChatServer.class);
-    private final IMessageService messageService;
+    private final BroadcastService broadcastService;
     private final int port;
     private final int maxThreads;
 
-    public ChatServer(ServerConfig cfg, IMessageService messageService) {
+    public ChatServer(ServerConfig cfg, BroadcastService broadcastService) {
         validateServerConfig(cfg);
         port = cfg.port();
         maxThreads = cfg.maxThreads();
-        this.messageService = messageService;
+        this.broadcastService = broadcastService;
     }
 
     private void validateServerConfig(ServerConfig cfg) {
@@ -55,76 +49,29 @@ public class ChatServer implements Runnable {
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("server started listening on port {}", serverSocket.getLocalPort());
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 var client = serverSocket.accept();
                 log.info("new client connected: {}:{}", client.getInetAddress(), client.getPort());
-                pool.submit(() -> {
-                    try {
-                        handleClient(new UserContext(client));
-                    } catch (IOException e) {
-                        log.error("failed to create user context: {}", e.getMessage());
-                    }
-                });
+                pool.submit(() -> handleConnection(client));
             }
-        } catch (IOException e) {
-            log.fatal("failed to start server: {}", e.getMessage());
+        } catch (Exception e) {
+            log.fatal("failed to start server", e);
         }
         pool.shutdownNow();
     }
 
-    private void handleClient(UserContext ctx) {
-        messageService.addUser(ctx);
-        try (ctx) {
-            while (!ctx.isDisconnected()) {
-                ClientMessage msg = messageService.readMessage(ctx);
-                log.debug("received new {} message", msg.getType().name());
-
-                if (msg.getType() == MessageType.DISCONNECT) {
-                    ctx.setDisconnected(true);
-                    break;
+    private void handleConnection(Socket socket) {
+        try (var ctx = new UserContext(new ChatConnection(socket, new JsonMessageMapper()), broadcastService)) {
+            ctx.getConnection().readMessagesLoop((msg) -> {
+                try {
+                    ControllerRegistry.findByMessageType(msg.getType()).process(ctx, msg);
+                } catch (NullPointerException e) {
+                    log.warn("received unsupported message type {}", msg.getType().name());
                 }
-
-                if (!checkSessionToken(ctx, msg)) {
-                    continue;
-                }
-
-                ControllerRegistry.findByMessageType(msg.getType())
-                        .process(ctx, msg, messageService);
-            }
+            });
             log.info("client disconnected: {}", ctx.getUsername());
         } catch (Exception e) {
-            log.error("connection terminated: {}", e.getMessage());
-        } finally {
-            ctx.setAuthorized(false);
-            if (ctx.getUsername() != null) {
-                messageService.broadcastMessage(new UserLeave(
-                        new UserData(ctx.getUsername())
-                ));
-            }
-            messageService.removeUser(ctx);
-            SessionManager.removeUser(ctx.getUsername());
+            log.error("connection terminated", e);
         }
-    }
-
-    private boolean checkSessionToken(UserContext ctx, ClientMessage msg) throws IOException {
-        if (msg.getType() == MessageType.AUTH_REQUEST) {
-            if (ctx.isAuthorized()) {
-                messageService.sendMessage(ctx, new AuthFail(new ErrorData("already authorized")));
-                return false;
-            } else {
-                return true;
-            }
-        } else if (!ctx.isAuthorized()) {
-            messageService.sendMessage(ctx, new AuthFail(new ErrorData("unauthorized")));
-            return false;
-        }
-
-        if (msg.getSessionToken() == null || msg.getSessionToken().token() == null || ctx.getSessionToken() == null ||
-                !Objects.equals(msg.getSessionToken().token(), ctx.getSessionToken())) {
-            messageService.sendMessage(ctx, new AuthFail(new ErrorData("invalid session token")));
-            return false;
-        }
-
-        return true;
     }
 }

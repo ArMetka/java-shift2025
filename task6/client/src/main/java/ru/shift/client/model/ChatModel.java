@@ -1,11 +1,14 @@
 package ru.shift.client.model;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.shift.client.model.enums.ConnectionState;
 import ru.shift.client.model.enums.ModelEventType;
 import ru.shift.client.model.event.*;
+import ru.shift.client.model.exception.RequestFailedException;
 import ru.shift.client.model.listener.*;
-import ru.shift.common.dto.ChatMessageData;
-import ru.shift.common.dto.UserData;
+import ru.shift.common.connection.ChatConnection;
+import ru.shift.common.message.impl.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,9 +16,10 @@ import java.util.EnumMap;
 import java.util.List;
 
 public class ChatModel implements IChatModel {
+    private static final Logger log = LogManager.getLogger(ChatModel.class);
     private final EnumMap<ModelEventType, List<ModelEventListener>> listeners;
+    private volatile ChatConnection connection;
     private volatile String username;
-    private volatile String sessionToken;
     private volatile ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
 
     public ChatModel() {
@@ -31,121 +35,99 @@ public class ChatModel implements IChatModel {
     }
 
     @Override
-    public void sendMessage(String message) {
-        if (connectionState != ConnectionState.CONNECTED) {
-            return;
-        }
-
-        assert (sessionToken != null);
-        notifySendMessageEventListeners(new SendMessageEvent(new ChatMessageData(
-                new UserData(username),
-                message,
-                new Date()
-        ), sessionToken));
-    }
-
-    @Override
-    public void addMessage(ChatMessageData messageData) {
-        if (connectionState != ConnectionState.CONNECTED) {
-            return;
-        }
-
-        notifyNewMessageEventListeners(new NewMessageEvent(messageData));
-    }
-
-    @Override
-    public void addUser(UserData userData) {
-        if (connectionState != ConnectionState.CONNECTED) {
-            return;
-        }
-
-        notifyUserJoinEventListeners(new UserJoinEvent(userData, new Date()));
-    }
-
-    @Override
-    public void removeUser(UserData userData) {
-        if (connectionState != ConnectionState.CONNECTED) {
-            return;
-        }
-
-        notifyUserLeaveEventListeners(new UserLeaveEvent(userData, new Date()));
-    }
-
-    @Override
-    public void updateUserList(List<UserData> userDataList) {
-        if (connectionState != ConnectionState.CONNECTED) {
-            return;
-        }
-
-        notifyUserListEventListeners(new UserListEvent(userDataList));
-    }
-
-    @Override
-    public void initConnection(String username, String address, int port) {
+    public void initConnection(String username) {
         if (connectionState != ConnectionState.NOT_CONNECTED) {
             return;
         }
 
         this.username = username;
-        connectionState = ConnectionState.CONNECTING;
-        notifyConnectionInitEventListeners(new ConnectionInitEvent(username, address, port));
+        var future = connection.sendRequestAsync(new AuthRequest(username));
+        AuthResponse response;
+        try {
+            response = (AuthResponse) future.get();
+        } catch (Exception e) {
+            log.error("failed to get auth response", e);
+            failConnection(e.getMessage());
+            return;
+        }
+        if (response.getError() != null) {
+            failConnection(response.getError());
+            return;
+        }
+        log.info("successfully connected");
+        connectionState = ConnectionState.CONNECTED;
+        notifyConnectionSuccessEventListeners(new ConnectionSuccessEvent());
+
+        notifyUserListEventListeners(new UserListEvent(requestUsers()));
     }
 
     @Override
-    public void establishConnection(String sessionToken) {
-        if (connectionState != ConnectionState.CONNECTING) {
-            return;
-        }
-
-        this.sessionToken = sessionToken;
-        connectionState = ConnectionState.CONNECTED;
-        notifyConnectionSuccessEventListeners(new ConnectionSuccessEvent(sessionToken));
+    public void setConnection(ChatConnection connection) {
+        this.connection = connection;
     }
 
     @Override
     public void failConnection(String description) {
-        if (connectionState != ConnectionState.CONNECTING) {
+        if (connectionState != ConnectionState.NOT_CONNECTED) {
             return;
         }
 
         username = null;
-        connectionState = ConnectionState.NOT_CONNECTED;
+        connection = null;
         notifyConnectionFailEventListeners(new ConnectionFailEvent(description));
     }
 
     @Override
-    public void disconnect() {
+    public void sendMessage(String message) {
         if (connectionState != ConnectionState.CONNECTED) {
             return;
         }
 
+        connection.sendMessage(new ChatMessageNotification(message, username, new Date()));
+    }
+
+    @Override
+    public void disconnect(boolean isServerDisconnect) {
+        if (connectionState != ConnectionState.CONNECTED) {
+            return;
+        }
+
+        if (!isServerDisconnect) {
+            connection.sendMessage(new DisconnectNotification());
+        }
         username = null;
-        sessionToken = null;
+        connection = null;
         connectionState = ConnectionState.NOT_CONNECTED;
         notifyDisconnectEventListeners(new DisconnectEvent());
     }
 
-    private void notifySendMessageEventListeners(SendMessageEvent event) {
-        for (var listener : listeners.get(ModelEventType.SEND_MESSAGE)) {
-            ((SendMessageEventListener) listener).onSendMessage(event);
-        }
+    @Override
+    public void addUser(String username) {
+        notifyUserJoinEventListeners(new UserJoinEvent(username, new Date()));
     }
 
-    private void notifyNewMessageEventListeners(NewMessageEvent event) {
-        for (var listener : listeners.get(ModelEventType.NEW_MESSAGE)) {
-            ((NewMessageEventListener) listener).onNewMessage(event);
-        }
+    @Override
+    public void removeUser(String username) {
+        notifyUserLeaveEventListeners(new UserLeaveEvent(username, new Date()));
     }
 
-    private void notifyConnectionInitEventListeners(ConnectionInitEvent event) {
-        for (var listener : listeners.get(ModelEventType.CONNECTION_INIT)) {
-            ((ConnectionInitEventListener) listener).onConnectionInit(event);
-        }
+    @Override
+    public void addMessage(String username, String message, Date date) {
+        notifyNewMessageEventListeners(new NewMessageEvent(username, message, date));
     }
 
-    private void notifyConnectionFailEventListeners(ConnectionFailEvent event) {
-        for (var listener : listeners.get(ModelEventType.CONNECTION_FAIL)) {
-            ((ConnectionFailEventListener) listener).onConnectionFail(event);
+    private List<String> requestUsers() {
+        var future = connection.sendRequestAsync(new UserListRequest());
+
+        try {
+            UserListResponse res = (UserListResponse) future.get();
+            if (res.getError() != null) {
+                throw new RequestFailedException(res.getError());
+            }
+            return res.getUsers();
+        } catch (Exception e) {
+            log.warn("failed to get user list", e);
+            return null;
         }
     }
 
@@ -155,9 +137,21 @@ public class ChatModel implements IChatModel {
         }
     }
 
+    private void notifyConnectionFailEventListeners(ConnectionFailEvent event) {
+        for (var listener : listeners.get(ModelEventType.CONNECTION_FAIL)) {
+            ((ConnectionFailEventListener) listener).onConnectionFail(event);
+        }
+    }
+
     private void notifyDisconnectEventListeners(DisconnectEvent event) {
         for (var listener : listeners.get(ModelEventType.DISCONNECT)) {
             ((DisconnectEventListener) listener).onDisconnect(event);
+        }
+    }
+
+    private void notifyNewMessageEventListeners(NewMessageEvent event) {
+        for (var listener : listeners.get(ModelEventType.NEW_MESSAGE)) {
+            ((NewMessageEventListener) listener).onNewMessage(event);
         }
     }
 

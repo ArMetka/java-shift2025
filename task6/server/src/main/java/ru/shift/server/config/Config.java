@@ -1,5 +1,6 @@
 package ru.shift.server.config;
 
+import lombok.Getter;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -20,6 +21,7 @@ public class Config {
     private final Options options = new Options();
     private PropertiesInputStrategy inputStrategy;
 
+    @Getter
     private ServerConfig serverConfig;
 
     public static Config fromArgs(String[] args) throws ParseException, IOException {
@@ -89,9 +91,5 @@ public class Config {
         }
 
         return maxThreads;
-    }
-
-    public ServerConfig getServerConfig() {
-        return serverConfig;
     }
 }

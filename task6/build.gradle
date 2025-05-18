@@ -20,7 +20,12 @@ subprojects {
         implementation 'org.apache.logging.log4j:log4j-api'
         runtimeOnly 'org.apache.logging.log4j:log4j-core'
 
+        // JSON mapper (Jackson)
         implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+
+        // Lombok
+        compileOnly 'org.projectlombok:lombok:1.18.38'
+        annotationProcessor 'org.projectlombok:lombok:1.18.38'
     }
 
     java {

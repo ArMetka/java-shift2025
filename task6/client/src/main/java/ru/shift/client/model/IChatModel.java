@@ -1,26 +1,23 @@
 package ru.shift.client.model;
 
-import ru.shift.common.dto.ChatMessageData;
-import ru.shift.common.dto.UserData;
+import ru.shift.common.connection.ChatConnection;
 
-import java.util.List;
+import java.util.Date;
 
 public interface IChatModel extends IModelEventPublisher {
     void sendMessage(String message);
 
-    void addMessage(ChatMessageData messageData);
+    void initConnection(String username);
 
-    void addUser(UserData userData);
-
-    void removeUser(UserData userData);
-
-    void updateUserList(List<UserData> userDataList);
-
-    void initConnection(String username, String address, int port);
-
-    void establishConnection(String sessionToken);
+    void setConnection(ChatConnection connection);
 
     void failConnection(String description);
 
-    void disconnect();
+    void disconnect(boolean isServerDisconnect);
+
+    void addUser(String username);
+
+    void removeUser(String username);
+
+    void addMessage(String username, String message, Date date);
 }

@@ -1,9 +1,9 @@
 package ru.shift.client.view.window;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.shift.client.view.event.SendMessageEvent;
 import ru.shift.client.view.listener.SendMessageEventListener;
-import ru.shift.common.dto.ChatMessageData;
-import ru.shift.common.dto.UserData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class MainWindow extends JFrame {
+    private static final Logger log = LogManager.getLogger(MainWindow.class);
     private final Container container;
     private final BorderLayout layout;
 
@@ -79,29 +80,21 @@ public class MainWindow extends JFrame {
         container.add(inputPanel, BorderLayout.SOUTH);
     }
 
-    public void newMessage(ChatMessageData message) {
-        addMessage(message, false);
+    public void newMessage(String username, String message, Date date) {
+        addMessage(username, message, date, false);
     }
 
     public void userJoin(String username, Date date) {
-        addMessage(new ChatMessageData(
-                new UserData("Server"),
-                "User \"" + username + "\" joined the chat",
-                date
-        ), true);
+        addMessage("Server", "User \"" + username + "\" joined the chat", date, true);
         users.addElement(username);
     }
 
     public void userLeave(String username, Date date) {
-        addMessage(new ChatMessageData(
-                new UserData("Server"),
-                "User \"" + username + "\" left the chat",
-                date
-        ), true);
+        addMessage("Server", "User \"" + username + "\" left the chat", date, true);
         users.removeElement(username);
     }
 
-    private void addMessage(ChatMessageData message, boolean isServerMessage) {
+    private void addMessage(String username, String message, Date date, boolean isServerMessage) {
         var messagePanel = new JPanel();
         messagePanel.setLayout(new BorderLayout(5, 5));
         messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -109,13 +102,13 @@ public class MainWindow extends JFrame {
         SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
         fmt.setTimeZone(TimeZone.getDefault());
 
-        var userLabel = new JLabel(message.userData().name() + " [" + fmt.format(message.date()) + "]");
+        var userLabel = new JLabel(username + " [" + fmt.format(date) + "]");
         userLabel.setFont(userLabel.getFont().deriveFont(Font.BOLD));
         if (isServerMessage) {
             userLabel.setForeground(new Color(201, 23, 23));
         }
 
-        var contentArea = new JTextArea(message.messageContent());
+        var contentArea = new JTextArea(message);
         contentArea.setLineWrap(true);
         contentArea.setWrapStyleWord(true);
         contentArea.setEditable(false);
@@ -129,9 +122,9 @@ public class MainWindow extends JFrame {
         SwingUtilities.invokeLater(() -> messageScrollPane.getVerticalScrollBar().setValue(messageScrollPane.getVerticalScrollBar().getMaximum()));
     }
 
-    public void setUsers(List<UserData> userDataList) {
+    public void setUsers(List<String> usernames) {
         users.removeAllElements();
-        userDataList.forEach(e -> users.addElement(e.name()));
+        usernames.forEach(e -> users.addElement(e));
     }
 
     public void setSendMessageBtnEnabled(boolean enabled) {
