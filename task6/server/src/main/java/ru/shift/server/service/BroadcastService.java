@@ -38,7 +38,7 @@ public class BroadcastService {
                 try {
                     user.getConnection().sendMessage(msg);
                 } catch (Exception e) {
-                    log.warn("failed to send message to client {}", user.getUsername(), e);
+                    log.error("failed to send message to client {}", user.getUsername(), e);
                     user.setDisconnected(true);
                     removeUser(user);
                 }

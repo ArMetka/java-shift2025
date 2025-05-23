@@ -63,9 +63,10 @@ public class ChatServer implements Runnable {
     private void handleConnection(Socket socket) {
         try (var ctx = new UserContext(new ChatConnection(socket, new JsonMessageMapper()), broadcastService)) {
             ctx.getConnection().readMessagesLoop((msg) -> {
-                try {
-                    ControllerRegistry.findByMessageType(msg.getType()).process(ctx, msg);
-                } catch (NullPointerException e) {
+                var controller = ControllerRegistry.findByMessageType(msg.getType());
+                if (controller != null) {
+                    controller.process(ctx, msg);
+                } else {
                     log.warn("received unsupported message type {}", msg.getType().name());
                 }
             });

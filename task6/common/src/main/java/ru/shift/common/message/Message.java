@@ -10,9 +10,5 @@ import java.io.Serializable;
 public interface Message extends Serializable {
     MessageType getType();
 
-    boolean isRequest();
-
-    boolean isResponse();
-
-    boolean isNotification();
+    MessageCategory getCategory();
 }

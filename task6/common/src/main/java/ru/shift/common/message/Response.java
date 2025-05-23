@@ -6,17 +6,7 @@ public interface Response extends Message {
     String getError();
 
     @Override
-    default boolean isRequest() {
-        return false;
-    }
-
-    @Override
-    default boolean isResponse() {
-        return true;
-    }
-
-    @Override
-    default boolean isNotification() {
-        return false;
+    default MessageCategory getCategory() {
+        return MessageCategory.RESPONSE;
     }
 }

@@ -126,7 +126,7 @@ public class ChatModel implements IChatModel {
             }
             return res.getUsers();
         } catch (Exception e) {
-            log.warn("failed to get user list", e);
+            log.error("failed to get user list", e);
             return null;
         }
     }

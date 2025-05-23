@@ -43,7 +43,8 @@ public class ChatController {
                     model.addModelEventListener(ModelEventType.CONNECTION_FAIL, (ConnectionFailEventListener) e -> {
                         try {
                             connection.close();
-                        } catch (Exception ignore) {
+                        } catch (Exception ex) {
+                            log.error("connection failed", ex);
                         }
                     });
                     model.setConnection(connection);
@@ -86,7 +87,7 @@ public class ChatController {
                 }
             });
         } catch (Exception e) {
-            log.warn("stopped listening", e);
+            log.error("stopped listening", e);
         } finally {
             listening = false;
         }

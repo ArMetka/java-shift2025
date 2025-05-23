@@ -10,17 +10,7 @@ public interface Request extends Message {
     }
 
     @Override
-    default boolean isRequest() {
-        return true;
-    }
-
-    @Override
-    default boolean isResponse() {
-        return false;
-    }
-
-    @Override
-    default boolean isNotification() {
-        return false;
+    default MessageCategory getCategory() {
+        return MessageCategory.REQUEST;
     }
 }

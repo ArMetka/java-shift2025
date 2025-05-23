@@ -5,11 +5,9 @@ import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.shift.common.exception.ConnectionException;
+import ru.shift.common.exception.EndOfInputException;
 import ru.shift.common.exception.MappingException;
-import ru.shift.common.message.Message;
-import ru.shift.common.message.MessageMapper;
-import ru.shift.common.message.Request;
-import ru.shift.common.message.Response;
+import ru.shift.common.message.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,38 +50,47 @@ public class ChatConnection implements AutoCloseable {
         var address = socket.getInetAddress();
         var port = socket.getPort();
 
-        log.info("reading messages from {}:{} in a loop", address, port);
-        while (shouldListen) {
-            Message msg;
-            try {
-                var line = in.readLine();
-                if (line == null) {
-                    break;
+        try {
+            log.info("reading messages from {}:{} in a loop", address, port);
+            while (shouldListen) {
+                try {
+                    var msg = receiveMessage();
+                    log.debug("received new message from {}:{} of type {}", address, port, msg.getType().name());
+                    handleMessage(consumer, msg);
+                } catch (MappingException e) {
+                    log.error("received bad massage", e);
                 }
-                msg = mapper.deserialize(line);
-            } catch (MappingException e) {
-                log.warn("received bad massage", e);
-                continue;
-            } catch (IOException e) {
-                log.error("IO error while reading message", e);
-                break;
             }
-            log.debug("received new message from {}:{} of type {}", address, port, msg.getType().name());
-
-            if (msg.isNotification() || msg.isRequest()) {
-                consumer.accept(msg);
-            } else if (msg.isResponse()) {
-                var response = (Response) msg;
-                var request = activeRequests.remove(response.getID());
-                if (request == null) {
-                    throw new ConnectionException("received response to non-existent request");
-                }
-                request.complete(response);
-            } else {
-                log.warn("received bad message of type {}", msg.getType().name());
-            }
+        } catch (EndOfInputException ignore) {
+        } catch (IOException e) {
+            log.error("IO error while reading message", e);
+        } finally {
+            log.info("stopped reading from {}:{}", address, port);
         }
-        log.info("stopped reading from {}:{}", address, port);
+    }
+
+    private Message receiveMessage() throws IOException {
+        var line = in.readLine();
+        if (line == null) {
+            throw new EndOfInputException("received EOF");
+        }
+        return mapper.deserialize(line);
+    }
+
+    private void handleMessage(Consumer<Message> consumer, Message msg) {
+        var category = msg.getCategory();
+        if (category == MessageCategory.NOTIFICATION || category == MessageCategory.REQUEST) {
+            consumer.accept(msg);
+        } else if (category == MessageCategory.RESPONSE) {
+            var response = (Response) msg;
+            var request = activeRequests.remove(response.getID());
+            if (request == null) {
+                throw new ConnectionException("received response to non-existent request");
+            }
+            request.complete(response);
+        } else {
+            log.warn("received bad message of type {}", msg.getType().name());
+        }
     }
 
     public CompletableFuture<Response> sendRequestAsync(Request request) {
