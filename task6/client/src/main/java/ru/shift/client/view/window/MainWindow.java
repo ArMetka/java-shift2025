@@ -1,7 +1,5 @@
 package ru.shift.client.view.window;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import ru.shift.client.view.event.SendMessageEvent;
 import ru.shift.client.view.listener.SendMessageEventListener;
 
@@ -14,9 +12,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class MainWindow extends JFrame {
-    private static final Logger log = LogManager.getLogger(MainWindow.class);
     private final Container container;
-    private final BorderLayout layout;
 
     private JMenuItem connectMenu;
 
@@ -37,8 +33,7 @@ public class MainWindow extends JFrame {
         createMenu();
 
         container = getContentPane();
-        layout = new BorderLayout();
-        container.setLayout(layout);
+        container.setLayout(new BorderLayout());
 
         createChatGUI();
     }

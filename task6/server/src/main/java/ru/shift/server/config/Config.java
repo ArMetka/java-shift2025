@@ -6,6 +6,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import ru.shift.server.config.exception.InvalidPropertiesException;
 import ru.shift.server.dto.ServerConfig;
+import ru.shift.server.exception.InvalidServerConfigException;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,16 +79,23 @@ public class Config {
     }
 
     private int validatePort(int port) {
-        if (port < 0 || port > 65536) {
-            throw new InvalidPropertiesException("port must be in range [0; 65636], got: " + port);
+        if (port < ServerConfig.PORT_MIN_VALUE || port > ServerConfig.PORT_MAX_VALUE) {
+            throw new InvalidPropertiesException(
+                    "port must be in range " +
+                            "[" + ServerConfig.PORT_MIN_VALUE + "; " + ServerConfig.PORT_MAX_VALUE + "]" +
+                            ", got: " + port
+            );
         }
 
         return port;
     }
 
     private int validateMaxThreads(int maxThreads) {
-        if (maxThreads < 0) {
-            throw new InvalidPropertiesException("number of threads must be >= 0, got: " + maxThreads);
+        if (maxThreads < ServerConfig.THREADS_MIN_VALUE) {
+            throw new InvalidPropertiesException(
+                    "number of threads must be >= " + ServerConfig.THREADS_MIN_VALUE +
+                            ", got: " + maxThreads
+            );
         }
 
         return maxThreads;

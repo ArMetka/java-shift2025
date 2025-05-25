@@ -61,7 +61,8 @@ public class ChatConnection implements AutoCloseable {
                     log.error("received bad massage", e);
                 }
             }
-        } catch (EndOfInputException ignore) {
+        } catch (EndOfInputException e) {
+            log.info(e.getMessage());
         } catch (IOException e) {
             log.error("IO error while reading message", e);
         } finally {

@@ -29,12 +29,19 @@ public class ChatServer implements Runnable {
     }
 
     private void validateServerConfig(ServerConfig cfg) {
-        if (cfg.port() < 0 || cfg.port() > 65536) {
-            throw new InvalidServerConfigException("port must be in range [0; 65636], got: " + cfg.port());
+        if (cfg.port() < ServerConfig.PORT_MIN_VALUE || cfg.port() > ServerConfig.PORT_MAX_VALUE) {
+            throw new InvalidServerConfigException(
+                    "port must be in range " +
+                            "[" + ServerConfig.PORT_MIN_VALUE + "; " + ServerConfig.PORT_MAX_VALUE + "]" +
+                            ", got: " + cfg.port()
+            );
         }
 
-        if (cfg.maxThreads() < 0) {
-            throw new InvalidServerConfigException("number of threads must be >= 0, got: " + cfg.maxThreads());
+        if (cfg.maxThreads() < ServerConfig.THREADS_MIN_VALUE) {
+            throw new InvalidServerConfigException(
+                    "number of threads must be >= " + ServerConfig.THREADS_MIN_VALUE +
+                            ", got: " + cfg.maxThreads()
+            );
         }
     }
 
@@ -49,7 +56,7 @@ public class ChatServer implements Runnable {
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("server started listening on port {}", serverSocket.getLocalPort());
-            while (!Thread.currentThread().isInterrupted()) {
+            while (true) {
                 var client = serverSocket.accept();
                 log.info("new client connected: {}:{}", client.getInetAddress(), client.getPort());
                 pool.submit(() -> handleConnection(client));

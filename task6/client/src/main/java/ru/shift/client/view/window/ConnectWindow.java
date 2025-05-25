@@ -1,5 +1,6 @@
 package ru.shift.client.view.window;
 
+import ru.shift.client.ChatClient;
 import ru.shift.client.view.event.ConnectEvent;
 import ru.shift.client.view.listener.ConnectEventListener;
 
@@ -7,8 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ConnectWindow extends JDialog {
-    private static final String DEFAULT_SERVER_ADDRESS = "localhost";
-    private static final String DEFAULT_SERVER_PORT = "3242";
     private final GridBagConstraints gbc;
 
     private JTextField usernameField;
@@ -45,14 +44,14 @@ public class ConnectWindow extends JDialog {
         gbc.gridy = 1;
         add(new JLabel("Server Address:"), gbc);
         gbc.gridx = 1;
-        addressField = new JTextField(DEFAULT_SERVER_ADDRESS, 15);
+        addressField = new JTextField(ChatClient.DEFAULT_SERVER_ADDRESS, 15);
         add(addressField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
         add(new JLabel("Port:"), gbc);
         gbc.gridx = 1;
-        portField = new JTextField(DEFAULT_SERVER_PORT, 15);
+        portField = new JTextField(ChatClient.DEFAULT_SERVER_PORT, 15);
         add(portField, gbc);
     }
 
