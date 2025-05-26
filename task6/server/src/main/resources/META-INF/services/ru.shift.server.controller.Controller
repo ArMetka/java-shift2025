@@ -1,0 +1,3 @@
+ru.shift.server.controller.impl.AuthController
+ru.shift.server.controller.impl.MessageController
+ru.shift.server.controller.impl.UsersController

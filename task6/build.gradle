@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'ru.shift'
+    version = '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // Logger (Apache Log4j)
+        implementation platform('org.apache.logging.log4j:log4j-bom:2.24.3')
+        implementation 'org.apache.logging.log4j:log4j-api'
+        runtimeOnly 'org.apache.logging.log4j:log4j-core'
+
+        // JSON mapper (Jackson)
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+
+        // Lombok
+        compileOnly 'org.projectlombok:lombok:1.18.38'
+        annotationProcessor 'org.projectlombok:lombok:1.18.38'
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+tasks.register('build') {
+    dependsOn subprojects.collect { it.path + ':build' }
+}
+
+tasks.register('clean') {
+    dependsOn subprojects.collect { it.path + ':clean' }
+}
